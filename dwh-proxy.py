@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+"""Write sensor data to DB"""
+
+import argparse
+import re
+import logging
+import sys
+import datetime
+import pymysql
+import json
+import urllib.request
+import os
+from pathlib import Path
+
+current_dir = os.path.dirname(os.path.abspath(__file__)) + "/";
+
+def writeyoutube(args):
+
+    with open(current_dir + 'youtube-apikey.json') as json_data_file:
+        data = json.load(json_data_file)
+        channel_id = data["youtube"]["channelid"]
+        api_key = data["youtube"]["apikey"]
+
+    # Note f before first quote of string
+    apiurl = f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channel_id}&fields=items/statistics/subscriberCount&key={api_key}"
+
+    req = urllib.request.Request(apiurl)
+    r = urllib.request.urlopen(req).read()
+    jsonreponse = json.loads(r.decode('utf-8'))
+
+    subscribercount = jsonreponse['items'][0]['statistics']['subscriberCount']
+
+    writeMySQL(args, "YouTube" , None, 'subscribercount', int(subscribercount), None , None  )
+
+def writetwitter(args):
+
+    channelname = args.channelname
+
+    # Note f before first quote of string channelname
+    apiurl = f"https://cdn.syndication.twimg.com/widgets/followbutton/info.json?screen_names={channelname}"
+
+    req = urllib.request.Request(apiurl)
+    r = urllib.request.urlopen(req).read()
+    jsonreponse = json.loads(r.decode('utf-8'))
+
+    followers_count = jsonreponse[0]['followers_count']
+
+    writeMySQL(args, "Twitter" , None, 'followers_count', followers_count, None , None )
+
+
+def writeweather(args):
+
+    with open(current_dir + 'weather-apikey.json') as json_data_file:
+        data = json.load(json_data_file)
+        apikey = data["weather"]["apikey"]
+
+    city = args.city
+    # Note f before first quote of string
+    apiurl = f"http://api.openweathermap.org/data/2.5/weather?q={city}&APPID={apikey}&units=metric"
+
+    req = urllib.request.Request(apiurl)
+    r = urllib.request.urlopen(req).read()
+    jsonreponse = json.loads(r.decode('utf-8'))
+
+    temperature = jsonreponse['main']['temp']
+    humidity = jsonreponse['main']['humidity']
+    wind = jsonreponse['wind']['speed']
+
+    writeMySQL(args, city , None, 'temperature', temperature, None , None )
+    writeMySQL(args, city , None, 'humidity', humidity, None , None )
+    writeMySQL(args, city , None, 'wind', wind, None , None  )
+
+def writeblog(args):
+
+    # Note f before first quote of string
+    apiurl = "https://api.marc.tv/"
+
+    req = urllib.request.Request(apiurl)
+    r = urllib.request.urlopen(req).read()
+    jsonreponse = json.loads(r.decode('utf-8'))
+
+    currentvisitors = jsonreponse['row']['visitors']
+
+    writeMySQL(args, "Marc.TV" , None, 'currentvisitors', currentvisitors, None , None  )
+
+def writemcserver(args):
+
+    # Note f before first quote of string
+    apiurl = "https://mc.marc.tv/db/data.json"
+
+    req = urllib.request.Request(apiurl)
+    r = urllib.request.urlopen(req).read()
+    jsonreponse = json.loads(r.decode('utf-8'))
+
+    currentplayers = jsonreponse['server']['players_online']
+
+    writeMySQL(args, "MCServer" , None, 'currentplayers', currentplayers, None , None  )
+
+def writeMySQL(args,device,type,event,value,reading,unit):
+
+    with open(current_dir + 'mysql-config.json') as json_data_file:
+        data = json.load(json_data_file)
+
+        server = data["mysql"]["server"]
+        user = data["mysql"]["user"]
+        password = data["mysql"]["password"]
+        db = data["mysql"]["db"]
+
+    db = pymysql.connect(server,user,password,db )
+
+    # prepare a cursor object using cursor() method
+    cursor = db.cursor()
+
+    # Prepare SQL query to INSERT a record into the database.
+    sql = "INSERT INTO history (TIMESTAMP,DEVICE,TYPE,EVENT,VALUE,READING,UNIT) VALUES (NOW(), %s, %s, %s, %s,%s ,%s)"
+    val = (device ,type ,event ,value ,reading ,unit)
+
+    try:
+       # Execute the SQL command
+       cursor.execute(sql, val)
+    except:
+       print ("Error: unable to connect to mysql db")
+    # disconnect from server
+    db.close()
+
+
+def main():
+    """Main function.
+
+    Mostly parsing the command line arguments.
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-v', '--verbose', action='store_const', const=True)
+    subparsers = parser.add_subparsers(help='sub-command help', )
+
+    parser_poll = subparsers.add_parser('writeweather', help='poll and write weather')
+    parser_poll.add_argument('city', type=str)
+    parser_poll.set_defaults(func=writeweather)
+
+    parser_poll = subparsers.add_parser('writeblog', help='poll and write blog')
+    parser_poll.set_defaults(func=writeblog)
+
+    parser_poll = subparsers.add_parser('writeyoutube', help='poll and write youtube')
+    parser_poll.set_defaults(func=writeyoutube)
+
+    parser_poll = subparsers.add_parser('writemcserver', help='poll and write mcserver')
+    parser_poll.set_defaults(func=writemcserver)
+
+    parser_poll = subparsers.add_parser('writetwitter', help='poll and write twitter')
+    parser_poll.add_argument('channelname', type=str)
+    parser_poll.set_defaults(func=writetwitter)
+
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+
+    if not hasattr(args, "func"):
+        parser.print_help()
+        sys.exit(0)
+
+    args.func(args)
+
+
+if __name__ == '__main__':
+    main()
