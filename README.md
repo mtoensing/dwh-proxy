@@ -1,6 +1,10 @@
 # dwh-proxy
 DataWareHouse Proxy for Grafana and MySQL
 
+## MySQL structure
+
+See `history.sql`.
+
 ## mysql-config.json
 
 ```json
