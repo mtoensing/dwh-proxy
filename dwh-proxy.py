@@ -30,7 +30,7 @@ def writeyoutube(args):
 
     subscribercount = jsonreponse['items'][0]['statistics']['subscriberCount']
 
-    writeMySQL(args, "YouTube" , None, 'subscribercount', int(subscribercount), None , None  )
+    writeMySQL(args, "YouTube" , None, 'subscribercount', int(subscribercount), None , "Subscriber"  )
 
 def writetwitter(args):
 
@@ -45,7 +45,7 @@ def writetwitter(args):
 
     followers_count = jsonreponse[0]['followers_count']
 
-    writeMySQL(args, "Twitter" , None, 'followers_count', followers_count, None , None )
+    writeMySQL(args, "Twitter" , None, 'followers_count', followers_count, None , "Follower" )
 
 
 def writeweather(args):
@@ -66,9 +66,9 @@ def writeweather(args):
     humidity = jsonreponse['main']['humidity']
     wind = jsonreponse['wind']['speed']
 
-    writeMySQL(args, city , None, 'temperature', temperature, None , None )
-    writeMySQL(args, city , None, 'humidity', humidity, None , None )
-    writeMySQL(args, city , None, 'wind', wind, None , None  )
+    writeMySQL(args, city , None, 'temperature', temperature, None , "Celsius" )
+    writeMySQL(args, city , None, 'humidity', humidity, None , "Celsius" )
+    writeMySQL(args, city , None, 'wind', wind, None , "Celsius"  )
 
 def writeblog(args):
 
@@ -81,7 +81,7 @@ def writeblog(args):
 
     currentvisitors = jsonreponse['row']['visitors']
 
-    writeMySQL(args, "Marc.TV" , None, 'currentvisitors', currentvisitors, None , None  )
+    writeMySQL(args, "Marc.TV" , None, 'currentvisitors', currentvisitors, None , "Visitors" )
 
 def writemcserver(args):
 
@@ -94,7 +94,7 @@ def writemcserver(args):
 
     currentplayers = jsonreponse['server']['players_online']
 
-    writeMySQL(args, "MCServer" , None, 'currentplayers', currentplayers, None , None  )
+    writeMySQL(args, "MCServer" , None, 'currentplayers', currentplayers, None , "Player"  )
 
 def writeMySQL(args,device,type,event,value,reading,unit):
 
