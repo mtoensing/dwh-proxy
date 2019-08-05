@@ -21,6 +21,8 @@ See `history.sql`.
 
 ## weather-apikey.json
 
+Get apikey from http://api.openweathermap.org
+
 ```json
 {
     "weather":{
