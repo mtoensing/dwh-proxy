@@ -21,8 +21,7 @@ def writeyoutube(args):
         channel_id = data["youtube"]["channelid"]
         api_key = data["youtube"]["apikey"]
 
-    # Note f before first quote of string
-    apiurl = f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channel_id}&fields=items/statistics/subscriberCount&key={api_key}"
+    apiurl = "https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channel_id}&fields=items/statistics/subscriberCount&key={api_key}".format(channel_id=channel_id,api_key=api_key)
 
     req = urllib.request.Request(apiurl)
     r = urllib.request.urlopen(req).read()
@@ -36,8 +35,7 @@ def writetwitter(args):
 
     channelname = args.channelname
 
-    # Note f before first quote of string channelname
-    apiurl = f"https://cdn.syndication.twimg.com/widgets/followbutton/info.json?screen_names={channelname}"
+    apiurl = "https://cdn.syndication.twimg.com/widgets/followbutton/info.json?screen_names={channelname}".format(channelname=channelname)
 
     req = urllib.request.Request(apiurl)
     r = urllib.request.urlopen(req).read()
@@ -55,8 +53,8 @@ def writeweather(args):
         apikey = data["weather"]["apikey"]
 
     city = args.city
-    # Note f before first quote of string
-    apiurl = f"http://api.openweathermap.org/data/2.5/weather?q={city}&APPID={apikey}&units=metric"
+    apiurl = "http://api.openweathermap.org/data/2.5/weather?q={city}&APPID={apikey}&units=metric".format(city=city, apikey=apikey)
+
 
     req = urllib.request.Request(apiurl)
     r = urllib.request.urlopen(req).read()
