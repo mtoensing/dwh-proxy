@@ -31,6 +31,15 @@ def writeyoutube(args):
 
     writeMySQL(args, "YouTube" , None, 'subscribercount', int(subscribercount), None , "Subscriber"  )
 
+def writemctps(args):
+
+    cmd = args.cmd
+    tpsstring = os.popen(cmd).read()
+    tps = tpsstring.split(",")
+    tps_5 = re.sub('[^0-9,.]', '', tps[3])
+
+    writeMySQL(args, "MCServer" , None, 'tps', tps_5 , None , "TPS of last 5 minutes"  )
+
 def writetwitter(args):
 
     channelname = args.channelname
@@ -54,7 +63,6 @@ def writeweather(args):
 
     city = args.city
     apiurl = "http://api.openweathermap.org/data/2.5/weather?q={city}&APPID={apikey}&units=metric".format(city=city, apikey=apikey)
-
 
     req = urllib.request.Request(apiurl)
     r = urllib.request.urlopen(req).read()
@@ -135,6 +143,10 @@ def main():
     parser_poll = subparsers.add_parser('writeweather', help='poll and write weather')
     parser_poll.add_argument('city', type=str)
     parser_poll.set_defaults(func=writeweather)
+
+    parser_poll = subparsers.add_parser('writemctps', help='poll and write write mctps')
+    parser_poll.add_argument('cmd', type=str)
+    parser_poll.set_defaults(func=writemctps)
 
     parser_poll = subparsers.add_parser('writeblog', help='poll and write blog')
     parser_poll.set_defaults(func=writeblog)
