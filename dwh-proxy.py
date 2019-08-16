@@ -31,12 +31,29 @@ def writeyoutube(args):
 
     writeMySQL(args, "YouTube" , None, 'subscribercount', int(subscribercount), None , "Subscriber"  )
 
+def writemccpu(args):
+
+    cmd = args.cmd
+    cpustring = os.popen(cmd).read()
+    cpuload = re.sub('[^0-9,.]', '', cpustring)
+    writeMySQL(args, "MCServer" , None, 'cpu', cpuload , None , "%"  )
+
+def writemcmem(args):
+
+    cmd = args.cmd
+    memstring = os.popen(cmd).read()
+    memload = re.sub('[^0-9,.]', '', memstring)
+    writeMySQL(args, "MCServer" , None, 'mem', memload , None , "%"  )
+
 def writemctps(args):
 
     cmd = args.cmd
     tpsstring = os.popen(cmd).read()
     tps = tpsstring.split(",")
+    # Average TPS of last minute
     tps_5 = re.sub('[^0-9,.]', '', tps[3])
+    print(tpsstring)
+    print(tps_5)
 
     writeMySQL(args, "MCServer" , None, 'tps', tps_5 , None , "TPS"  )
 
@@ -147,6 +164,14 @@ def main():
     parser_poll = subparsers.add_parser('writemctps', help='poll and write write mctps')
     parser_poll.add_argument('cmd', type=str)
     parser_poll.set_defaults(func=writemctps)
+
+    parser_poll = subparsers.add_parser('writemccpu', help='poll and write write mc cpu')
+    parser_poll.add_argument('cmd', type=str)
+    parser_poll.set_defaults(func=writemccpu)
+
+    parser_poll = subparsers.add_parser('writemcmem', help='poll and write write mc mem')
+    parser_poll.add_argument('cmd', type=str)
+    parser_poll.set_defaults(func=writemcmem)
 
     parser_poll = subparsers.add_parser('writeblog', help='poll and write blog')
     parser_poll.set_defaults(func=writeblog)

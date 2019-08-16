@@ -1,11 +1,6 @@
 # dwh-proxy
 DataWareHouse Proxy for Grafana and MySQL
 
-```pip3 pymysql``` 
-
-On Synology:
-```sudo python3 -m pip install pymysql```
-
 ## MySQL structure
 
 See `history.sql`.
