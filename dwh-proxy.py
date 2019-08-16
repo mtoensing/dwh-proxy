@@ -38,7 +38,7 @@ def writemctps(args):
     tps = tpsstring.split(",")
     tps_5 = re.sub('[^0-9,.]', '', tps[3])
 
-    writeMySQL(args, "MCServer" , None, 'tps', tps_5 , None , "TPS of last 5 minutes"  )
+    writeMySQL(args, "MCServer" , None, 'tps', tps_5 , None , "TPS"  )
 
 def writetwitter(args):
 
