@@ -1,7 +1,7 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-python3 $DIR/dwh-proxy.py writemctps "docker exec -i mcserver rcon-cli --host localhost --port 25575 --password netherrack tps | sed -e  's/[^0-9., ]*//g' -e  's/ \+/ /g'"
+python3 $DIR/dwh-proxy.py writemctps "docker exec -i mcserver rcon-cli --host localhost --port 25575 --password mypass tps | sed -e  's/[^0-9., ]*//g' -e  's/ \+/ /g'"
 python3 $DIR/dwh-proxy.py writemccpu "docker stats mcserver --no-stream --format '{{.CPUPerc}}'"
 python3 $DIR/dwh-proxy.py writemcmem "docker stats mcserver --no-stream --format '{{.MemPerc}}'"
 
