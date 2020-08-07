@@ -14,6 +14,25 @@ from pathlib import Path
 
 current_dir = os.path.dirname(os.path.abspath(__file__)) + "/";
 
+def writedockerhub(args):
+
+    dockerhubuser = args.dockerhubuser
+    dockerhubcontainer = args.dockerhubcontainer
+
+    # Note f before first quote of string
+    apiurl = f"https://hub.docker.com/v2/repositories/{dockerhubuser}/{dockerhubcontainer}/"
+
+    req = urllib.request.Request(apiurl)
+    r = urllib.request.urlopen(req).read()
+    jsonreponse = json.loads(r.decode('utf-8'))
+
+    star_count = jsonreponse['star_count']
+    pull_count = jsonreponse['pull_count']
+
+    writeMySQL(args, dockerhubcontainer , None, 'star_count', star_count, None , "stars" )
+    writeMySQL(args, dockerhubcontainer , None, 'pull_count', pull_count, None , "pulls" )
+
+
 def writeyoutube(args):
 
     with open(current_dir + 'youtube-apikey.json') as json_data_file:
@@ -156,6 +175,11 @@ def main():
 
     parser.add_argument('-v', '--verbose', action='store_const', const=True)
     subparsers = parser.add_subparsers(help='sub-command help', )
+
+    parser_poll = subparsers.add_parser('writedockerhub', help='poll and write docker hub')
+    parser_poll.add_argument('dockerhubuser', type=str)
+    parser_poll.add_argument('dockerhubcontainer', type=str)
+    parser_poll.set_defaults(func=writedockerhub)
 
     parser_poll = subparsers.add_parser('writeweather', help='poll and write weather')
     parser_poll.add_argument('city', type=str)
