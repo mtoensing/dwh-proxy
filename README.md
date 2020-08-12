@@ -42,3 +42,12 @@ Get apikey from http://api.openweathermap.org
     }
 }
 ```
+
+## On Synology
+
+Install the official Python3 package first. To install PyMySQL on Synology DSM do the following:
+```
+sudo su
+curl -k https://bootstrap.pypa.io/get-pip.py | python3
+/volume1/@appstore/py3k/usr/local/bin/pip3 install PyMySQL
+```
