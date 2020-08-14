@@ -53,27 +53,26 @@ def writeyoutube(args):
 
 def writemccpu(args):
 
-    cmd = args.cmd
-    cpustring = os.popen(cmd).read()
+    cpustring = args.cmd
     cpuload = re.sub('[^0-9,.]', '', cpustring)
+
     writeMySQL(args, "MCServer" , None, 'cpu', cpuload , None , "%"  )
 
 def writemcmem(args):
 
-    cmd = args.cmd
-    memstring = os.popen(cmd).read()
+    memstring = args.cmd
     memload = re.sub('[^0-9,.]', '', memstring)
+
     writeMySQL(args, "MCServer" , None, 'mem', memload , None , "%"  )
 
 def writemctps(args):
 
-    cmd = args.cmd
-    tpsstring = os.popen(cmd).read()
+    tpsstring = args.cmd
     tps = tpsstring.split(",")
-    # Average TPS of last minute
+    # Average TPS of last 5 mintes minute
     tps_5 = re.sub('[^0-9,.]', '', tps[3])
-    print(tpsstring)
-    print(tps_5)
+    #print(tpsstring)
+    #print(tps_5)
 
     writeMySQL(args, "MCServer" , None, 'tps', tps_5 , None , "TPS"  )
 
