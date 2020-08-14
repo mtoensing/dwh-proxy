@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# V0.4
 """Write sensor data to DB"""
 
 import argparse
