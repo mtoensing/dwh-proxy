@@ -51,3 +51,6 @@ sudo su
 curl -k https://bootstrap.pypa.io/get-pip.py | python3
 /volume1/@appstore/py3k/usr/local/bin/pip3 install PyMySQL
 ```
+
+## Purge old entries from the database
+DELETE FROM history WHERE TIMESTAMP < (NOW() - INTERVAL 6 MONTH)
