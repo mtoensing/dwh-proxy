@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # V0.4
+# Marc Tönsing
 """Write sensor data to DB"""
 
 import argparse
@@ -30,8 +31,8 @@ def writedockerhub(args):
     star_count = jsonreponse['star_count']
     pull_count = jsonreponse['pull_count']
 
-    writeMySQL(args, dockerhubcontainer , None, 'star_count', star_count, None , "stars" )
-    writeMySQL(args, dockerhubcontainer , None, 'pull_count', pull_count, None , "pulls" )
+    writeMySQL(args, dockerhubcontainer , "dockerhub", 'star_count', star_count, None , "stars" )
+    writeMySQL(args, dockerhubcontainer , "dockerhub", 'pull_count', pull_count, None , "pulls" )
 
 
 def writeyoutube(args):
@@ -41,14 +42,16 @@ def writeyoutube(args):
         channel_id = data["youtube"]["channelid"]
         api_key = data["youtube"]["apikey"]
 
-    apiurl = "https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channel_id}&fields=items/statistics/subscriberCount&key={api_key}".format(channel_id=channel_id,api_key=api_key)
+    apiurl = "https://www.googleapis.com/youtube/v3/channels?part=statistics&id={channel_id}&fields=items/statistics&key={api_key}".format(channel_id=channel_id,api_key=api_key)
 
     req = urllib.request.Request(apiurl)
     r = urllib.request.urlopen(req).read()
     jsonreponse = json.loads(r.decode('utf-8'))
 
     subscribercount = jsonreponse['items'][0]['statistics']['subscriberCount']
+    viewcount = jsonreponse['items'][0]['statistics']['viewCount']
 
+    writeMySQL(args, "YouTube" , None, 'viewcount', int(viewcount), None , "Views"  )
     writeMySQL(args, "YouTube" , None, 'subscribercount', int(subscribercount), None , "Subscriber"  )
 
 def writemccpu(args):
@@ -153,6 +156,7 @@ def writeMySQL(args,device,type,event,value,reading,unit):
     # prepare a cursor object using cursor() method
     cursor = db.cursor()
 
+    #print(datetime.datetime.now())
     # Prepare SQL query to INSERT a record into the database.
     sql = "INSERT INTO history (TIMESTAMP,DEVICE,TYPE,EVENT,VALUE,READING,UNIT) VALUES (NOW(), %s, %s, %s, %s,%s ,%s)"
     val = (device ,type ,event ,value ,reading ,unit)
