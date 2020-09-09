@@ -16,6 +16,29 @@ from pathlib import Path
 
 current_dir = os.path.dirname(os.path.abspath(__file__)) + "/";
 
+def writematomo(args):
+
+    with open(current_dir + 'matomo-authkey.json') as json_data_file:
+        data = json.load(json_data_file)
+        token_auth = data["matomo"]["token_auth"]
+
+    matomourl = args.matomourl
+    siteid = args.siteid
+
+    # Note f before first quote of string
+    apiurl = f"{matomourl}/?module=API&format=json&method=VisitsSummary.get&idSite={siteid}&date=today&period=day&token_auth=&token_auth={token_auth}"
+
+    req = urllib.request.Request(apiurl)
+    r = urllib.request.urlopen(req).read()
+    jsonreponse = json.loads(r.decode('utf-8'))
+
+    nb_uniq_visitors = jsonreponse['nb_uniq_visitors']
+    nb_visits = jsonreponse['nb_visits']
+
+    writeMySQL(args, 'matomo' , siteid, 'unique_visitors', nb_uniq_visitors, None , "unique visitors" )
+    writeMySQL(args, 'matomo' , siteid, 'visits', nb_visits, None , "visits" )
+
+
 def writedockerhub(args):
 
     dockerhubuser = args.dockerhubuser
@@ -179,6 +202,11 @@ def main():
 
     parser.add_argument('-v', '--verbose', action='store_const', const=True)
     subparsers = parser.add_subparsers(help='sub-command help', )
+
+    parser_poll = subparsers.add_parser('writematomo', help='poll and write matomo stats')
+    parser_poll.add_argument('matomourl', type=str)
+    parser_poll.add_argument('siteid', type=str)
+    parser_poll.set_defaults(func=writematomo)
 
     parser_poll = subparsers.add_parser('writedockerhub', help='poll and write docker hub')
     parser_poll.add_argument('dockerhubuser', type=str)
