@@ -16,6 +16,22 @@ from pathlib import Path
 
 current_dir = os.path.dirname(os.path.abspath(__file__)) + "/";
 
+def writefeedly(args):
+
+    feedId = args.feedId
+
+    # Note f before first quote of string
+    apiurl = f"http://cloud.feedly.com/v3/feeds/feed%2F{feedId}"
+
+    req = urllib.request.Request(apiurl)
+    r = urllib.request.urlopen(req).read()
+    jsonreponse = json.loads(r.decode('utf-8'))
+
+    subscribers = jsonreponse['subscribers']
+
+    writeMySQL(args, 'feedly' , None, 'subscribers', subscribers, None , "Subscribers" )
+
+
 def writematomo(args):
 
     with open(current_dir + 'matomo-authkey.json') as json_data_file:
@@ -202,6 +218,10 @@ def main():
 
     parser.add_argument('-v', '--verbose', action='store_const', const=True)
     subparsers = parser.add_subparsers(help='sub-command help', )
+
+    parser_poll = subparsers.add_parser('writefeedly', help='poll and write feedly subscribers')
+    parser_poll.add_argument('feedId', type=str)
+    parser_poll.set_defaults(func=writefeedly)
 
     parser_poll = subparsers.add_parser('writematomo', help='poll and write matomo stats')
     parser_poll.add_argument('matomourl', type=str)
