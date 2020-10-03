@@ -10,11 +10,63 @@ import sys
 import datetime
 import pymysql
 import json
+import asyncio
 import urllib.request
 import os
+
 from pathlib import Path
+from meross_iot.http_api import MerossHttpClient
+from meross_iot.manager import MerossManager
 
 current_dir = os.path.dirname(os.path.abspath(__file__)) + "/";
+
+async def merossasync(devicetype):
+
+    with open(current_dir + 'meross-auth.json') as json_data_file:
+        data = json.load(json_data_file)
+        email = data["meross"]["email"]
+        password = data["meross"]["password"]
+
+    # Setup the HTTP client API from user-password
+    http_api_client = await MerossHttpClient.async_from_user_password(email=email, password=password)
+
+    # Setup and start the device manager
+    manager = MerossManager(http_client=http_api_client)
+    await manager.async_init()
+
+    # Retrieve all the MS100 devices that are registered on this account
+    await manager.async_device_discovery()
+    sensors = manager.find_devices(device_type="ms100")
+
+    if len(sensors) < 1:
+        print("No MS100 plugs found...")
+    else:
+        dev = sensors[0]
+
+        # Manually force and update to retrieve the latest temperature sensed from
+        # the device. This ensures we get the most recent data and not a cached value
+        await dev.async_update()
+
+        # Access read cached data
+        temp = dev.last_sampled_temperature
+        humid = dev.last_sampled_humidity
+        time = dev.last_sampled_time
+
+        #writeMySQL(args, "meross" , None, 'temperature', temperature, None , "Celsius" )
+        #writeMySQL(args, "meross" , None, 'humidity', humidity, None , "Humidity" )
+
+        print(f"Current sampled data on {time.isoformat()}; Temperature={temp}°C, Humidity={humid}%")
+    # Close the manager and logout from http_api
+    manager.close()
+    await http_api_client.async_logout()
+
+def writemeross(args):
+
+    devicetype = args.devicetype
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(merossasync(devicetype=devicetype))
+    loop.close()
 
 def writefeedly(args):
 
@@ -151,8 +203,8 @@ def writeweather(args):
     wind = jsonreponse['wind']['speed']
 
     writeMySQL(args, city , None, 'temperature', temperature, None , "Celsius" )
-    writeMySQL(args, city , None, 'humidity', humidity, None , "Celsius" )
-    writeMySQL(args, city , None, 'wind', wind, None , "Celsius"  )
+    writeMySQL(args, city , None, 'humidity', humidity, None , "Humidity" )
+    writeMySQL(args, city , None, 'wind', wind, None , ""  )
 
 def writeblog(args):
 
@@ -208,7 +260,6 @@ def writeMySQL(args,device,type,event,value,reading,unit):
     # disconnect from server
     db.close()
 
-
 def main():
     """Main function.
 
@@ -218,6 +269,10 @@ def main():
 
     parser.add_argument('-v', '--verbose', action='store_const', const=True)
     subparsers = parser.add_subparsers(help='sub-command help', )
+
+    parser_poll = subparsers.add_parser('writemeross', help='poll and write meross iot')
+    parser_poll.add_argument('devicetype', type=str)
+    parser_poll.set_defaults(func=writemeross)
 
     parser_poll = subparsers.add_parser('writefeedly', help='poll and write feedly subscribers')
     parser_poll.add_argument('feedId', type=str)
